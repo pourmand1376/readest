@@ -28,6 +28,8 @@ jobs:
         NEXT_PUBLIC_TRANSLATION_FIXED_QUOTA=50000
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
