@@ -27,16 +27,16 @@ jobs:
         NEXT_PUBLIC_STORAGE_FIXED_QUOTA=1073741824
         NEXT_PUBLIC_TRANSLATION_FIXED_QUOTA=50000
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1 # v3
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -53,7 +53,7 @@ jobs:
 
       - name: Log in to Docker Hub
         if: steps.dockerhub.outputs.enabled == 'true'
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1 # v3
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -61,9 +61,7 @@ jobs:
       - name: Extract image metadata (GHCR only)
         id: meta-ghcr
         if: steps.dockerhub.outputs.enabled != 'true'
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/readest
+        uses: docker/metadata-action@v5
           tags: |
             type=raw,value=main,enable={{is_default_branch}}
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
@@ -74,7 +72,7 @@ jobs:
       - name: Extract image metadata (GHCR + Docker Hub)
         id: meta-all
         if: steps.dockerhub.outputs.enabled == 'true'
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        uses: docker/metadata-action@v5
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/readest
@@ -89,14 +87,7 @@ jobs:
       - name: Build and push (GHCR only)
         id: build-ghcr
         if: steps.dockerhub.outputs.enabled != 'true'
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
-        with:
-          context: .
-          file: ./Dockerfile
-          target: production-stage
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta-ghcr.outputs.tags }}
+        uses: docker/build-push-action@v6
           labels: ${{ steps.meta-ghcr.outputs.labels }}
           build-args: ${{ env.BUILD_ARGS }}
 
@@ -116,7 +107,7 @@ jobs:
       - name: Build and push (GHCR + Docker Hub)
         id: build-all
         if: steps.dockerhub.outputs.enabled == 'true'
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
