@@ -4,7 +4,7 @@
 
 | service         | Image                       | Description                                       |
 | --------------- | --------------------------- | ------------------------------------------------- |
-| **client**      | from `../Dockerfile`        | readest frontend                                  |
+| **client**      | `ghcr.io/readest/readest`   | readest frontend                                  |
 | **db**          | `supabase/postgres`         | psql db with supabase extensions                  |
 | **kong**        | `kong:2.8.1`                | api gateway routing requests to supabase services |
 | **auth**        | `supabase/gotrue:v2.185.0`  | auth service (email, JWT)                         |
@@ -40,16 +40,29 @@ update `docker/.env`:
   - `SERVICE_ROLE_KEY` payload: `{"role": "service_role"}`
 - set `MINIO_ROOT_PASSWORD` to a strong password
 
-### 2. Start the Stack
+### 2. Start the Stack (pull prebuilt client image)
 
 run from the `docker/` directory:
 
 ```bash
 cd docker
-docker compose up --build -d
+docker compose up -d
 ```
 
-the client image is built locally on first run. subsequent starts reuse the cached image.
+this pulls `${READEST_IMAGE}` (default: `ghcr.io/readest/readest:latest`) instead of building the client locally.
+
+if you prefer Docker Hub, set `READEST_IMAGE` in `docker/.env`, for example:
+
+```env
+READEST_IMAGE=docker.io/<your-dockerhub-namespace>/readest:latest
+```
+
+### Build locally instead of pulling
+
+```bash
+cd docker
+docker compose -f compose.yaml -f compose.build.yaml up --build -d
+```
 
 ### 3. Access
 
@@ -58,7 +71,7 @@ the client image is built locally on first run. subsequent starts reuse the cach
 
 ### Hot Reload (development)
 
-to develop using the compose stack, set the build target on `client` to `development-stage`, which'll runs the next.js dev server. to enable hot reload, uncomment the `volumes` block in the `client` service in `compose.yaml`:
+to develop using the compose stack, use local builds (`compose.yaml` + `compose.build.yaml`) and set the build target on `client` to `development-stage` in `compose.build.yaml`, which'll runs the next.js dev server. to enable hot reload, uncomment the `volumes` block in the `client` service in `compose.yaml`:
 
 ```yaml
 volumes:
