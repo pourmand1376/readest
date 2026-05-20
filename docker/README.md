@@ -54,8 +54,15 @@ this pulls `${READEST_IMAGE}` (default: `ghcr.io/readest/readest:latest`) instea
 if you prefer Docker Hub, set `READEST_IMAGE` in `docker/.env`, for example:
 
 ```env
-READEST_IMAGE=docker.io/<your-dockerhub-namespace>/readest:latest
+READEST_IMAGE=docker.io/your-dockerhub-username/readest:latest
 ```
+
+replace `your-dockerhub-username` with the Docker Hub namespace that publishes your `readest` image.
+for official images, use the namespace configured for this repository's Docker Hub publishing secrets.
+
+published tags:
+- `latest`: published from release events
+- `main`: rolling image from the default branch
 
 ### Build locally instead of pulling
 
@@ -71,7 +78,7 @@ docker compose -f compose.yaml -f compose.build.yaml up --build -d
 
 ### Hot Reload (development)
 
-to develop using the compose stack, use local builds (`compose.yaml` + `compose.build.yaml`) and set the build target on `client` to `development-stage` in `compose.build.yaml`, which'll runs the next.js dev server. to enable hot reload, uncomment the `volumes` block in the `client` service in `compose.yaml`:
+to develop using the compose stack, use local builds (`compose.yaml` + `compose.build.yaml`) and set the build target on `client` to `development-stage` in `compose.build.yaml`, which runs the next.js dev server. to enable hot reload, uncomment the `volumes` block in the `client` service in `compose.yaml`:
 
 ```yaml
 volumes:

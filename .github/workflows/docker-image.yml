@@ -18,6 +18,12 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      BUILD_ARGS: |
+        NEXT_PUBLIC_APP_PLATFORM=web
+        NEXT_PUBLIC_OBJECT_STORAGE_TYPE=s3
+        NEXT_PUBLIC_STORAGE_FIXED_QUOTA=1073741824
+        NEXT_PUBLIC_TRANSLATION_FIXED_QUOTA=50000
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -34,41 +40,70 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Detect Docker Hub credentials
+        id: dockerhub
+        run: |
+          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ] && [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Log in to Docker Hub
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        if: steps.dockerhub.outputs.enabled == 'true'
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1 # v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract image metadata
-        id: meta
-        uses: docker/metadata-action@v5
+      - name: Extract image metadata (GHCR only)
+        id: meta-ghcr
+        if: steps.dockerhub.outputs.enabled != 'true'
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
-          images: |
-            ghcr.io/${{ github.repository_owner }}/readest
-            ${{ secrets.DOCKERHUB_USERNAME != '' && format('docker.io/{0}/readest', secrets.DOCKERHUB_USERNAME) || '' }}
+          images: ghcr.io/${{ github.repository_owner }}/readest
           tags: |
             type=raw,value=main,enable={{is_default_branch}}
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
             type=ref,event=tag
             type=sha,prefix=sha-
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
+      - name: Extract image metadata (GHCR + Docker Hub)
+        id: meta-all
+        if: steps.dockerhub.outputs.enabled == 'true'
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/readest
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/readest
+          tags: |
+            type=raw,value=main,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=ref,event=tag
+            type=sha,prefix=sha-
+
+      - name: Build and push (GHCR only)
+        if: steps.dockerhub.outputs.enabled != 'true'
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
           file: ./Dockerfile
           target: production-stage
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            NEXT_PUBLIC_SUPABASE_URL=http://localhost:8000
-            NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-jwt-signed-with-jwt-secret
-            NEXT_PUBLIC_APP_PLATFORM=web
-            NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
-            NEXT_PUBLIC_OBJECT_STORAGE_TYPE=s3
-            NEXT_PUBLIC_STORAGE_FIXED_QUOTA=1073741824
-            NEXT_PUBLIC_TRANSLATION_FIXED_QUOTA=50000
+          tags: ${{ steps.meta-ghcr.outputs.tags }}
+          labels: ${{ steps.meta-ghcr.outputs.labels }}
+          build-args: ${{ env.BUILD_ARGS }}
+
+      - name: Build and push (GHCR + Docker Hub)
+        if: steps.dockerhub.outputs.enabled == 'true'
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: production-stage
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-all.outputs.tags }}
+          labels: ${{ steps.meta-all.outputs.labels }}
+          build-args: ${{ env.BUILD_ARGS }}
