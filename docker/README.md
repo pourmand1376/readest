@@ -142,4 +142,6 @@ docker run -p 3000:3000 \
   readest-client
 ```
 
-for Linux hosts without `host.docker.internal`, replace it with your host IP.
+on Linux, some Docker setups do not resolve `host.docker.internal` by default.
+in that case, either replace it with your host IP or run with:
+`--add-host=host.docker.internal:host-gateway`.

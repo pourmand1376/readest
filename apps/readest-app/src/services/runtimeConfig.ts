@@ -14,6 +14,8 @@ export const getRuntimeConfig = () =>
   typeof window === 'undefined' ? undefined : window.__READEST_RUNTIME_CONFIG;
 
 export const getServerRuntimeConfig = (): ReadestRuntimeConfig => ({
+  // Browser runtime config should prefer a public Supabase URL when provided.
+  // SUPABASE_URL remains as a backward-compatible fallback for non-split setups.
   supabaseUrl:
     process.env['SUPABASE_PUBLIC_URL'] ??
     process.env['NEXT_PUBLIC_SUPABASE_URL'] ??
