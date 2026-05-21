@@ -50,7 +50,7 @@ docker compose up -d
 ```
 
 this pulls `${READEST_IMAGE}` (default: `ghcr.io/readest/readest:latest`) instead of building the client locally.
-the web client now reads `SUPABASE_PUBLIC_URL`, `SUPABASE_ANON_KEY`, and `API_BASE_URL` from runtime
+the web client now reads `SUPABASE_PUBLIC_URL`, `SUPABASE_ANON_KEY`, `API_BASE_URL`, `OBJECT_STORAGE_TYPE`, `STORAGE_FIXED_QUOTA`, and `TRANSLATION_FIXED_QUOTA` from runtime
 container env, so custom self-hosted values work with pulled images.
 
 if you prefer Docker Hub, set `READEST_IMAGE` in `docker/.env`, for example:
@@ -118,9 +118,6 @@ docker compose down -v
 docker build \
   --target production-stage \
   --build-arg NEXT_PUBLIC_APP_PLATFORM=web \
-  --build-arg NEXT_PUBLIC_OBJECT_STORAGE_TYPE=s3 \
-  --build-arg NEXT_PUBLIC_STORAGE_FIXED_QUOTA=1073741824 \
-  --build-arg NEXT_PUBLIC_TRANSLATION_FIXED_QUOTA=50000 \
   -t readest-client \
   .
 ```
@@ -134,11 +131,14 @@ docker run -p 3000:3000 \
   -e SUPABASE_ANON_KEY=<anon-key> \
   -e SUPABASE_ADMIN_KEY=<service-role-key> \
   -e API_BASE_URL=http://localhost:3000 \
+  -e OBJECT_STORAGE_TYPE=s3 \
   -e S3_ENDPOINT=http://host.docker.internal:9000 \
   -e S3_REGION=us-east-1 \
   -e S3_BUCKET_NAME=readest-files \
   -e S3_ACCESS_KEY_ID=<minio-user> \
   -e S3_SECRET_ACCESS_KEY=<minio-password> \
+  -e STORAGE_FIXED_QUOTA=1073741824 \
+  -e TRANSLATION_FIXED_QUOTA=50000 \
   readest-client
 ```
 

@@ -23,9 +23,6 @@ jobs:
     env:
       BUILD_ARGS: |
         NEXT_PUBLIC_APP_PLATFORM=web
-        NEXT_PUBLIC_OBJECT_STORAGE_TYPE=s3
-        NEXT_PUBLIC_STORAGE_FIXED_QUOTA=1073741824
-        NEXT_PUBLIC_TRANSLATION_FIXED_QUOTA=50000
     steps:
       - uses: actions/checkout@v4
         with:

@@ -2,6 +2,9 @@ export interface ReadestRuntimeConfig {
   supabaseUrl?: string;
   supabaseAnonKey?: string;
   apiBaseUrl?: string;
+  objectStorageType?: string;
+  storageFixedQuota?: number;
+  translationFixedQuota?: number;
 }
 
 declare global {
@@ -25,4 +28,13 @@ export const getServerRuntimeConfig = (): ReadestRuntimeConfig => ({
     process.env['API_BASE_URL'] ??
     process.env['NEXT_PUBLIC_API_BASE_URL'] ??
     process.env['SITE_URL'],
+  // These were previously baked as NEXT_PUBLIC_* build args; now read from runtime env so
+  // the published image can be configured without rebuilding.
+  objectStorageType: process.env['OBJECT_STORAGE_TYPE'],
+  storageFixedQuota: process.env['STORAGE_FIXED_QUOTA']
+    ? parseInt(process.env['STORAGE_FIXED_QUOTA'], 10)
+    : undefined,
+  translationFixedQuota: process.env['TRANSLATION_FIXED_QUOTA']
+    ? parseInt(process.env['TRANSLATION_FIXED_QUOTA'], 10)
+    : undefined,
 });
