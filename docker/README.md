@@ -50,7 +50,7 @@ docker compose up -d
 ```
 
 this pulls `${READEST_IMAGE}` (default: `ghcr.io/readest/readest:latest`) instead of building the client locally.
-the web client now reads `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `API_BASE_URL` from runtime
+the web client now reads `SUPABASE_PUBLIC_URL`, `SUPABASE_ANON_KEY`, and `API_BASE_URL` from runtime
 container env, so custom self-hosted values work with pulled images.
 
 if you prefer Docker Hub, set `READEST_IMAGE` in `docker/.env`, for example:
@@ -64,7 +64,9 @@ for official images, use the namespace configured for this repository's Docker H
 
 published tags:
 - `latest`: published from release events
+- `<release-tag>` (for example `v1.2.3`): published from release events
 - `main`: rolling image from the default branch
+- `sha-<commit>`: immutable commit tag
 
 ### Build locally instead of pulling
 
@@ -127,14 +129,17 @@ run the built image:
 
 ```bash
 docker run -p 3000:3000 \
-  -e SUPABASE_URL=http://localhost:7000 \
+  -e SUPABASE_URL=http://host.docker.internal:7000 \
+  -e SUPABASE_PUBLIC_URL=http://localhost:7000 \
   -e SUPABASE_ANON_KEY=<anon-key> \
   -e SUPABASE_ADMIN_KEY=<service-role-key> \
   -e API_BASE_URL=http://localhost:3000 \
-  -e S3_ENDPOINT=http://localhost:9000 \
+  -e S3_ENDPOINT=http://host.docker.internal:9000 \
   -e S3_REGION=us-east-1 \
   -e S3_BUCKET_NAME=readest-files \
   -e S3_ACCESS_KEY_ID=<minio-user> \
   -e S3_SECRET_ACCESS_KEY=<minio-password> \
   readest-client
 ```
+
+for Linux hosts without `host.docker.internal`, replace it with your host IP.

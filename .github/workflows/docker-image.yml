@@ -5,10 +5,6 @@ on:
   push:
     branches:
       - main
-      # temporary: keep branch-publish visibility for this PR branch only
-      - copilot/add-ci-release-automation
-    tags:
-      - v*
   release:
     types:
       - published
@@ -73,8 +69,8 @@ jobs:
           tags: |
             type=raw,value=main,enable={{is_default_branch}}
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
             type=ref,event=branch
-            type=ref,event=tag
             type=sha,prefix=sha-
 
       - name: Extract image metadata (GHCR + Docker Hub)
@@ -88,8 +84,8 @@ jobs:
           tags: |
             type=raw,value=main,enable={{is_default_branch}}
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
             type=ref,event=branch
-            type=ref,event=tag
             type=sha,prefix=sha-
 
       - name: Build and push (GHCR only)
