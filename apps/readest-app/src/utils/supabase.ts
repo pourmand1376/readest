@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-
-const getRuntimeConfig = () =>
-  typeof window === 'undefined' ? undefined : window.__READEST_RUNTIME_CONFIG;
+import { getRuntimeConfig } from '@/services/runtimeConfig';
 
 const supabaseUrl =
   getRuntimeConfig()?.supabaseUrl ||

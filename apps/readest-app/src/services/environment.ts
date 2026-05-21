@@ -1,19 +1,12 @@
 import { AppService } from '@/types/system';
 import { READEST_NODE_BASE_URL, READEST_WEB_BASE_URL } from './constants';
+import { getRuntimeConfig } from './runtimeConfig';
 
 declare global {
   interface Window {
     __READEST_CLI_ACCESS?: boolean;
-    __READEST_RUNTIME_CONFIG?: {
-      supabaseUrl?: string;
-      supabaseAnonKey?: string;
-      apiBaseUrl?: string;
-    };
   }
 }
-
-const getRuntimeConfig = () =>
-  typeof window === 'undefined' ? undefined : window.__READEST_RUNTIME_CONFIG;
 
 export const isTauriAppPlatform = () => process.env['NEXT_PUBLIC_APP_PLATFORM'] === 'tauri';
 export const isWebAppPlatform = () => process.env['NEXT_PUBLIC_APP_PLATFORM'] === 'web';
