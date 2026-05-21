@@ -50,6 +50,8 @@ docker compose up -d
 ```
 
 this pulls `${READEST_IMAGE}` (default: `ghcr.io/readest/readest:latest`) instead of building the client locally.
+the web client now reads `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `API_BASE_URL` from runtime
+container env, so custom self-hosted values work with pulled images.
 
 if you prefer Docker Hub, set `READEST_IMAGE` in `docker/.env`, for example:
 
@@ -110,15 +112,10 @@ docker compose down -v
 
 ## Building the Dockerfile standalone
 
-the `Dockerfile` requires Build args for the next.js public env vars (they are inlined at build time)
-
 ```bash
 docker build \
   --target production-stage \
-  --build-arg NEXT_PUBLIC_SUPABASE_URL=http://localhost:7000 \
-  --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key> \
   --build-arg NEXT_PUBLIC_APP_PLATFORM=web \
-  --build-arg NEXT_PUBLIC_API_BASE_URL=http://localhost:3000 \
   --build-arg NEXT_PUBLIC_OBJECT_STORAGE_TYPE=s3 \
   --build-arg NEXT_PUBLIC_STORAGE_FIXED_QUOTA=1073741824 \
   --build-arg NEXT_PUBLIC_TRANSLATION_FIXED_QUOTA=50000 \
@@ -130,9 +127,10 @@ run the built image:
 
 ```bash
 docker run -p 3000:3000 \
-  -e SUPABASE_URL=http://kong:8000 \
+  -e SUPABASE_URL=http://localhost:7000 \
   -e SUPABASE_ANON_KEY=<anon-key> \
   -e SUPABASE_ADMIN_KEY=<service-role-key> \
+  -e API_BASE_URL=http://localhost:3000 \
   -e S3_ENDPOINT=http://localhost:9000 \
   -e S3_REGION=us-east-1 \
   -e S3_BUCKET_NAME=readest-files \

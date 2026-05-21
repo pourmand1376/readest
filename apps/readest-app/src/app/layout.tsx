@@ -121,6 +121,14 @@ const shouldInjectDevHmrPatch =
 const devHmrPatchScript = `(${patchTauriHmrWebSocket.toString()})(${JSON.stringify(
   process.env['TAURI_DEV_HOST'],
 )});`;
+const runtimeConfigScript = `window.__READEST_RUNTIME_CONFIG=${JSON.stringify({
+  supabaseUrl: process.env['SUPABASE_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'],
+  supabaseAnonKey: process.env['SUPABASE_ANON_KEY'] ?? process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
+  apiBaseUrl:
+    process.env['API_BASE_URL'] ??
+    process.env['NEXT_PUBLIC_API_BASE_URL'] ??
+    process.env['SITE_URL'],
+})};`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -128,11 +136,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang='en'
       className={process.env['NEXT_PUBLIC_APP_PLATFORM'] === 'tauri' ? 'edge-to-edge' : ''}
     >
-      {shouldInjectDevHmrPatch ? (
-        <head>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: runtimeConfigScript }} />
+        {shouldInjectDevHmrPatch ? (
           <script dangerouslySetInnerHTML={{ __html: devHmrPatchScript }} />
-        </head>
-      ) : null}
+        ) : null}
+      </head>
       <body>
         <ViewTransitions>
           <EnvProvider>
