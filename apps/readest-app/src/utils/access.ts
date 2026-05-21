@@ -39,8 +39,7 @@ export const getStoragePlanData = (token: string) => {
   const purchasedQuota = data['storage_purchased_bytes'] || 0;
   const runtimeConfig = getRuntimeConfig();
   const fixedQuota =
-    runtimeConfig?.storageFixedQuota ??
-    parseInt(process.env['STORAGE_FIXED_QUOTA'] ?? '0');
+    runtimeConfig?.storageFixedQuota ?? parseInt(process.env['STORAGE_FIXED_QUOTA'] ?? '0');
   const planQuota = fixedQuota || DEFAULT_STORAGE_QUOTA[plan] || DEFAULT_STORAGE_QUOTA['free'];
   const quota = planQuota + purchasedQuota;
 
@@ -54,8 +53,7 @@ export const getStoragePlanData = (token: string) => {
 export const getTranslationQuota = (plan: UserPlan): number => {
   const runtimeConfig = getRuntimeConfig();
   const fixedQuota =
-    runtimeConfig?.translationFixedQuota ??
-    parseInt(process.env['TRANSLATION_FIXED_QUOTA'] ?? '0');
+    runtimeConfig?.translationFixedQuota ?? parseInt(process.env['TRANSLATION_FIXED_QUOTA'] ?? '0');
   return (
     fixedQuota || DEFAULT_DAILY_TRANSLATION_QUOTA[plan] || DEFAULT_DAILY_TRANSLATION_QUOTA['free']
   );
