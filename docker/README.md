@@ -63,7 +63,7 @@ replace `your-dockerhub-username` with the Docker Hub namespace that publishes y
 for official images, use the namespace configured for this repository's Docker Hub publishing secrets.
 
 published tags:
-- `latest`: published from release events
+- `latest`: rolling image from the default branch and from release events
 - `<release-tag>` (for example `v1.2.3`): published from release events
 - `main`: rolling image from the default branch
 - `sha-<commit>`: immutable commit tag
@@ -82,16 +82,11 @@ docker compose -f compose.yaml -f compose.build.yaml up --build -d
 
 ### Hot Reload (development)
 
-to develop using the compose stack, use local builds (`compose.yaml` + `compose.build.yaml`) and set the build target on `client` to `development-stage` in `compose.build.yaml`, which runs the next.js dev server. to enable hot reload, uncomment the `volumes` block in the `client` service in `compose.yaml`:
+to develop using the compose stack, use `compose.dev.yaml` which sets the build target to `development-stage` (Next.js dev server) and mounts your local repo for hot reload:
 
-```yaml
-volumes:
-  - ../:/app
-  - /app/node_modules
-  - /app/apps/readest-app/node_modules
-  - /app/apps/readest-app/public/vendor
-  - /app/apps/readest-app/.next
-  - /app/packages/foliate-js/node_modules
+```bash
+cd docker
+docker compose -f compose.yaml -f compose.dev.yaml up --build -d
 ```
 
 the first mount overlays your local repo into the container. the remaining anonymous volumes shadow the directories that were pre-built inside the image, so the container's installed deps and vendor assets are used instead of what's on your host.
