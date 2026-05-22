@@ -8,6 +8,9 @@ services:
       target: development-stage
       args:
         NEXT_PUBLIC_APP_PLATFORM: web
+    environment:
+      # Required so pnpm does not abort when purging node_modules without a TTY
+      CI: "true"
     # Mount the source code for hot reload.
     # Anonymous volumes shadow pre-built dirs inside the image so the
     # container's installed deps and vendor assets are used instead of
