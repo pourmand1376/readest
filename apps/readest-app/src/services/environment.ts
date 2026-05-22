@@ -1,6 +1,6 @@
 import { AppService } from '@/types/system';
 import { READEST_NODE_BASE_URL, READEST_WEB_BASE_URL } from './constants';
-import { getRuntimeConfig } from './runtimeConfig';
+import { getRuntimeConfig, getCustomBackendConfig } from './runtimeConfig';
 
 declare global {
   interface Window {
@@ -13,6 +13,7 @@ export const isWebAppPlatform = () => process.env['NEXT_PUBLIC_APP_PLATFORM'] ==
 export const hasCli = () => window.__READEST_CLI_ACCESS === true;
 export const isPWA = () => window.matchMedia('(display-mode: standalone)').matches;
 export const getBaseUrl = () =>
+  getCustomBackendConfig()?.apiBaseUrl ??
   getRuntimeConfig()?.apiBaseUrl ??
   process.env['API_BASE_URL'] ??
   process.env['NEXT_PUBLIC_API_BASE_URL'] ??

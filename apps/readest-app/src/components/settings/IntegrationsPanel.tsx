@@ -9,6 +9,7 @@ import {
   RiBook3Line,
   RiDiscordLine,
   RiSendPlaneLine,
+  RiServerLine,
 } from 'react-icons/ri';
 import { useEnv } from '@/context/EnvContext';
 import { useAuth } from '@/context/AuthContext';
@@ -22,10 +23,11 @@ import KOSyncForm from './integrations/KOSyncForm';
 import ReadwiseForm from './integrations/ReadwiseForm';
 import HardcoverForm from './integrations/HardcoverForm';
 import SendToReadestForm from './integrations/SendToReadestForm';
+import CustomBackendForm from './integrations/CustomBackendForm';
 import SubPageHeader from './SubPageHeader';
 import { SectionTitle, SettingLabel } from './primitives';
 
-type SubPage = 'kosync' | 'readwise' | 'hardcover' | 'opds' | 'send' | null;
+type SubPage = 'kosync' | 'readwise' | 'hardcover' | 'opds' | 'send' | 'customBackend' | null;
 
 /**
  * Integrations panel — single point of discovery for external service config:
@@ -69,7 +71,8 @@ const IntegrationsPanel: React.FC = () => {
       requestedSubPage === 'readwise' ||
       requestedSubPage === 'hardcover' ||
       requestedSubPage === 'opds' ||
-      requestedSubPage === 'send'
+      requestedSubPage === 'send' ||
+      requestedSubPage === 'customBackend'
     ) {
       setSubPage(requestedSubPage);
     }
@@ -116,6 +119,12 @@ const IntegrationsPanel: React.FC = () => {
         <SendToReadestForm onBack={() => setSubPage(null)} />
       </div>
     );
+  if (subPage === 'customBackend')
+    return (
+      <div className='my-4 w-full'>
+        <CustomBackendForm onBack={() => setSubPage(null)} />
+      </div>
+    );
 
   const koSyncStatus = settings.kosync?.enabled
     ? settings.kosync.username
@@ -127,6 +136,9 @@ const IntegrationsPanel: React.FC = () => {
   const hardcoverStatus = settings.hardcover?.enabled ? _('Connected') : _('Not connected');
   const opdsStatus =
     opdsCount > 0 ? _('{{count}} catalog', { count: opdsCount }) : _('No catalogs');
+  const customBackendStatus = settings.customBackendUrl
+    ? settings.customBackendUrl
+    : _('Using default backend');
 
   return (
     <div className='my-4 w-full space-y-6'>
@@ -178,6 +190,20 @@ const IntegrationsPanel: React.FC = () => {
               title={_('Send to Readest')}
               status={_('Email books to your library')}
               onClick={() => setSubPage('send')}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className='w-full' data-setting-id='settings.integrations.selfHosting'>
+        <SectionTitle className='mb-2'>{_('Self-Hosting')}</SectionTitle>
+        <div className='card eink-bordered border-base-200 bg-base-100 overflow-hidden border'>
+          <div className='divide-base-200 divide-y'>
+            <IntegrationRow
+              icon={RiServerLine}
+              title={_('Custom Backend')}
+              status={customBackendStatus}
+              onClick={() => setSubPage('customBackend')}
             />
           </div>
         </div>

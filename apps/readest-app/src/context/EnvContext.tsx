@@ -9,6 +9,7 @@ import { initReplicaSync } from '@/services/sync/replicaSync';
 import { createSettingsCursorStore } from '@/services/sync/replicaCursorStore';
 import { startReplicaTransferIntegration } from '@/services/sync/replicaTransferIntegration';
 import { enableReplicaAutoPersist } from '@/services/sync/replicaPersist';
+import { getCustomBackendConfig, setCustomBackendConfig } from '@/services/runtimeConfig';
 
 interface EnvContextType {
   envConfig: EnvConfigType;
@@ -28,6 +29,16 @@ export const EnvProvider = ({ children }: { children: ReactNode }) => {
       setAppService(service);
       try {
         const settings = await service.loadSettings();
+        // Sync custom backend config to localStorage so supabase.ts can pick it
+        // up on the next page load (it reads localStorage synchronously at module
+        // init time, before settings are loaded). This handles the common case
+        // where localStorage was cleared but settings.json still has the config.
+        if (settings.customBackendConfig) {
+          const lsConfig = getCustomBackendConfig();
+          if (!lsConfig || lsConfig.apiBaseUrl !== settings.customBackendConfig.apiBaseUrl) {
+            setCustomBackendConfig(settings.customBackendConfig);
+          }
+        }
         if (settings.replicaDeviceId) {
           const ctx = initReplicaSync({
             deviceId: settings.replicaDeviceId,

@@ -1,12 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
-import { getRuntimeConfig } from '@/services/runtimeConfig';
+import { getRuntimeConfig, getCustomBackendConfig } from '@/services/runtimeConfig';
+
+const customConfig = getCustomBackendConfig();
 
 const supabaseUrl =
+  customConfig?.supabaseUrl ||
   getRuntimeConfig()?.supabaseUrl ||
   process.env['SUPABASE_URL'] ||
   process.env['NEXT_PUBLIC_SUPABASE_URL'] ||
   atob(process.env['NEXT_PUBLIC_DEFAULT_SUPABASE_URL_BASE64']!);
 const supabaseAnonKey =
+  customConfig?.supabaseAnonKey ||
   getRuntimeConfig()?.supabaseAnonKey ||
   process.env['SUPABASE_ANON_KEY'] ||
   process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] ||
