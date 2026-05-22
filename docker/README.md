@@ -70,6 +70,12 @@ published tags:
 
 ### Build locally instead of pulling
 
+> **Prerequisites for local builds**: the `packages/foliate-js` and `packages/simplecc-wasm` git submodules must be initialized before building:
+> ```bash
+> git submodule update --init packages/foliate-js packages/simplecc-wasm
+> ```
+> In GitHub Codespaces this is done automatically via `.devcontainer/devcontainer.json`.
+
 ```bash
 cd docker
 docker compose -f compose.yaml -f compose.build.yaml up --build -d
@@ -81,6 +87,8 @@ docker compose -f compose.yaml -f compose.build.yaml up --build -d
 - MinIO console: `http://localhost:9001` (login with `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD`)
 
 ### Hot Reload (development)
+
+> **Prerequisites**: submodules must be initialized (see above).
 
 to develop using the compose stack, use `compose.dev.yaml` which sets the build target to `development-stage` (Next.js dev server) and mounts your local repo for hot reload:
 
