@@ -10,7 +10,9 @@ export class BackendConfigError extends Error {
 /**
  * Fetch client-safe configuration from a self-hosted Readest backend.
  *
- * @param backendUrl  Base URL of the self-hosted server (trailing slash optional).
+ * @param backendUrl  Base URL of the self-hosted server. Trailing slashes are
+ *                    stripped automatically, so both `https://host` and
+ *                    `https://host/` are accepted.
  * @returns           Resolved `CustomBackendConfig` on success.
  * @throws            `BackendConfigError` if the request fails or the response is invalid.
  */

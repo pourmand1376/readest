@@ -14,7 +14,7 @@ interface CustomBackendFormProps {
 }
 
 /** Delay (ms) before reloading the page after saving backend config. */
-const RELOAD_DELAY_MS = 1500;
+const PAGE_RELOAD_DELAY_MS = 1500;
 
 /**
  * Show an informational toast then reload the page after a short delay so the
@@ -22,7 +22,7 @@ const RELOAD_DELAY_MS = 1500;
  */
 const reloadAfterToast = (message: string) => {
   eventDispatcher.dispatch('toast', { message, type: 'info' });
-  setTimeout(() => window.location.reload(), RELOAD_DELAY_MS);
+  setTimeout(() => window.location.reload(), PAGE_RELOAD_DELAY_MS);
 };
 
 const CustomBackendForm: React.FC<CustomBackendFormProps> = ({ onBack }) => {
