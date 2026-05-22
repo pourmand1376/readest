@@ -6,6 +6,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore } from '@/store/settingsStore';
 import { eventDispatcher } from '@/utils/event';
 import { fetchBackendConfig, BackendConfigError } from '@/services/backendConfig';
+import { isInsecureUrl } from '@/services/networkUtils';
 import { setCustomBackendConfig, clearCustomBackendConfig } from '@/services/runtimeConfig';
 import SubPageHeader from '../SubPageHeader';
 import { SectionTitle, SettingLabel } from '../primitives';
@@ -24,36 +25,6 @@ const PAGE_RELOAD_DELAY_MS = 1500;
 const reloadAfterToast = (message: string) => {
   eventDispatcher.dispatch('toast', { message, type: 'info' });
   setTimeout(() => window.location.reload(), PAGE_RELOAD_DELAY_MS);
-};
-
-/**
- * Returns true when the URL uses plain HTTP pointed at a public (non-private)
- * address — i.e. the connection is insecure and should trigger a warning.
- * Private ranges (localhost, 127.x.x.x, 10.x.x.x, 172.16-31.x.x,
- * 192.168.x.x, 169.254.x.x, *.local, *.lan, *.internal) are allowed over HTTP.
- */
-const isInsecureUrl = (raw: string): boolean => {
-  try {
-    const u = new URL(raw.trim());
-    if (u.protocol !== 'http:') return false;
-    const h = u.hostname;
-    if (h === 'localhost') return false;
-    if (h.endsWith('.local') || h.endsWith('.lan') || h.endsWith('.internal')) return false;
-    if (h === '::1') return false;
-    if (/^fe[89ab][0-9a-f]:/i.test(h)) return false; // fe80::/10 link-local
-    const parts = h.split('.');
-    if (parts.length === 4) {
-      const [o1, o2] = parts.map(Number);
-      if (o1 === 127) return false;
-      if (o1 === 10) return false;
-      if (o1 === 172 && o2 >= 16 && o2 <= 31) return false;
-      if (o1 === 192 && o2 === 168) return false;
-      if (o1 === 169 && o2 === 254) return false;
-    }
-    return true;
-  } catch {
-    return false;
-  }
 };
 
 const CustomBackendForm: React.FC<CustomBackendFormProps> = ({ onBack }) => {
