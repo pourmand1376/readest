@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import React, { useState } from 'react';
+import { MdWarningAmber } from 'react-icons/md';
 import { useEnv } from '@/context/EnvContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -25,6 +26,21 @@ const reloadAfterToast = (message: string) => {
   setTimeout(() => window.location.reload(), PAGE_RELOAD_DELAY_MS);
 };
 
+/** Returns true when the URL uses plain HTTP with a non-localhost host. */
+const isInsecureUrl = (raw: string): boolean => {
+  try {
+    const u = new URL(raw.trim());
+    return (
+      u.protocol === 'http:' &&
+      u.hostname !== 'localhost' &&
+      u.hostname !== '127.0.0.1' &&
+      u.hostname !== '::1'
+    );
+  } catch {
+    return false;
+  }
+};
+
 const CustomBackendForm: React.FC<CustomBackendFormProps> = ({ onBack }) => {
   const _ = useTranslation();
   const { settings, setSettings, saveSettings } = useSettingsStore();
@@ -34,6 +50,7 @@ const CustomBackendForm: React.FC<CustomBackendFormProps> = ({ onBack }) => {
   const [isConnecting, setIsConnecting] = useState(false);
 
   const isConfigured = !!settings.customBackendConfig;
+  const showHttpWarning = isInsecureUrl(url);
 
   const handleConnect = async () => {
     if (!url.trim()) return;
@@ -138,6 +155,16 @@ const CustomBackendForm: React.FC<CustomBackendFormProps> = ({ onBack }) => {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
               />
+              {showHttpWarning && (
+                <div className='text-warning flex items-start gap-1.5 text-xs'>
+                  <MdWarningAmber className='mt-0.5 shrink-0 text-base' />
+                  <span>
+                    {_(
+                      'Plain HTTP transmits credentials unencrypted. Use HTTPS for your server URL.',
+                    )}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className='flex justify-end pt-1'>

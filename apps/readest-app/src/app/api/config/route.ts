@@ -4,13 +4,18 @@ import { getServerRuntimeConfig } from '@/services/runtimeConfig';
 export const dynamic = 'force-dynamic';
 
 /**
- * Public endpoint that returns the client-safe backend configuration.
- * Native (Tauri) apps connecting to a self-hosted Readest backend call this
- * endpoint to discover the Supabase URL/key and API base URL without the user
- * needing to know those details.
+ * Public endpoint that returns the client-safe backend configuration for
+ * native (Tauri) apps connecting to a self-hosted Readest server.
  *
- * This route is intentionally unauthenticated — it only exposes values that
- * are already public (anon key, public URLs).
+ * Security notes:
+ * - The Supabase "anon key" is a public JWT by design — it is already embedded
+ *   in every web client bundle (NEXT_PUBLIC_SUPABASE_ANON_KEY) and is not a
+ *   secret. Its sole purpose is to identify the project; actual access control
+ *   is enforced by Supabase Row Level Security policies.
+ * - The service/admin key (SUPABASE_ADMIN_KEY) is never returned here.
+ * - This endpoint MUST be served over HTTPS in production. The native client
+ *   enforces this: plain-HTTP connections to non-localhost origins are rejected
+ *   in fetchBackendConfig().
  */
 export function GET() {
   const config = getServerRuntimeConfig();
