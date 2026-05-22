@@ -53,17 +53,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 RUN corepack prepare pnpm@11.1.1 --activate
 WORKDIR /app
-COPY --from=build /app/package.json /app/package.json
-COPY --from=build /app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
-COPY --from=build /app/pnpm-lock.yaml /app/pnpm-lock.yaml
-COPY --from=build /app/patches /app/patches
-COPY --from=build /app/node_modules /app/node_modules
-COPY --from=build /app/apps/readest-app/package.json /app/apps/readest-app/package.json
-COPY --from=build /app/apps/readest-app/.env.web /app/apps/readest-app/.env.web
-COPY --from=build /app/apps/readest-app/next.config.mjs /app/apps/readest-app/next.config.mjs
-COPY --from=build /app/apps/readest-app/node_modules /app/apps/readest-app/node_modules
-COPY --from=build /app/apps/readest-app/.next /app/apps/readest-app/.next
-COPY --from=build /app/apps/readest-app/public /app/apps/readest-app/public
+COPY --from=build /app /app
 WORKDIR /app/apps/readest-app
 ENTRYPOINT ["pnpm", "start-web", "-H", "0.0.0.0"]
 EXPOSE 3000
