@@ -2,15 +2,15 @@
 
 ## Stack
 
-| service         | Image                       | Description                                       |
-| --------------- | --------------------------- | ------------------------------------------------- |
-| **client**      | `ghcr.io/readest/readest`   | readest frontend                                  |
-| **db**          | `supabase/postgres`         | psql db with supabase extensions                  |
-| **kong**        | `kong:2.8.1`                | api gateway routing requests to supabase services |
-| **auth**        | `supabase/gotrue:v2.185.0`  | auth service (email, JWT)                         |
-| **rest**        | `postgrest/postgrest:v14.3` | psql rest api                                     |
-| **minio**       | `minio/minio`               | s3 storage                                        |
-| **minio-setup** | `minio/mc`                  | helper container to create s3 buckets             |
+| service         | Image                              | Description                                       |
+| --------------- | ---------------------------------- | ------------------------------------------------- |
+| **client**      | `ghcr.io/readest/readest`          | readest frontend                                  |
+| **db**          | `ghcr.io/readest/readest-db`       | psql db with supabase extensions + init scripts   |
+| **kong**        | `ghcr.io/readest/readest-kong`     | api gateway routing requests to supabase services |
+| **auth**        | `supabase/gotrue:v2.185.0`         | auth service (email, JWT)                         |
+| **rest**        | `postgrest/postgrest:v14.3`        | psql rest api                                     |
+| **minio**       | `minio/minio`                      | s3 storage                                        |
+| **minio-setup** | `minio/mc`                         | helper container to create s3 buckets             |
 
 ### Exposed ports
 
@@ -25,13 +25,18 @@
 
 ## Running with Docker/Podman Compose
 
-### 1. setup .env
+No repository clone required — just download two files and run.
+
+### 1. Download the config files
 
 ```bash
-cp docker/.env.example docker/.env
+curl -o compose.yaml https://raw.githubusercontent.com/readest/readest/main/docker/compose.yaml
+curl -o .env        https://raw.githubusercontent.com/readest/readest/main/docker/.env.example
 ```
 
-update `docker/.env`:
+### 2. Edit `.env`
+
+update `.env`:
 
 - update `POSTGRES_PASSWORD` to a strong password (32+ chars)
 - update `JWT_SECRET` to a random secret (32+ chars)
@@ -40,20 +45,19 @@ update `docker/.env`:
   - `SERVICE_ROLE_KEY` payload: `{"role": "service_role"}`
 - set `MINIO_ROOT_PASSWORD` to a strong password
 
-### 2. Start the Stack (pull prebuilt client image)
-
-run from the `docker/` directory:
+### 3. Start the Stack
 
 ```bash
-cd docker
 docker compose up -d
 ```
 
-this pulls `${READEST_IMAGE}` (default: `ghcr.io/readest/readest:latest`) instead of building the client locally.
-the web client now reads `SUPABASE_PUBLIC_URL`, `SUPABASE_ANON_KEY`, `API_BASE_URL`, `OBJECT_STORAGE_TYPE`, `STORAGE_FIXED_QUOTA`, and `TRANSLATION_FIXED_QUOTA` from runtime
+this pulls all images from GHCR (`ghcr.io/readest/readest`, `ghcr.io/readest/readest-db`,
+`ghcr.io/readest/readest-kong`) — no local files other than `compose.yaml` and `.env` are needed.
+the web client reads `SUPABASE_PUBLIC_URL`, `SUPABASE_ANON_KEY`, `API_BASE_URL`,
+`OBJECT_STORAGE_TYPE`, `STORAGE_FIXED_QUOTA`, and `TRANSLATION_FIXED_QUOTA` from runtime
 container env, so custom self-hosted values work with pulled images.
 
-if you prefer Docker Hub, set `READEST_IMAGE` in `docker/.env`, for example:
+if you prefer Docker Hub, set `READEST_IMAGE` in `.env`, for example:
 
 ```env
 READEST_IMAGE=docker.io/your-dockerhub-username/readest:latest
@@ -70,8 +74,10 @@ published tags:
 
 ### Build locally instead of pulling
 
-> **Prerequisites for local builds**: the `packages/foliate-js` and `packages/simplecc-wasm` git submodules must be initialized before building:
+> **Prerequisites for local builds**: clone the repository and initialize the git submodules:
 > ```bash
+> git clone https://github.com/readest/readest.git
+> cd readest
 > git submodule update --init packages/foliate-js packages/simplecc-wasm
 > ```
 > In GitHub Codespaces this is done automatically via `.devcontainer/devcontainer.json`.
@@ -81,7 +87,10 @@ cd docker
 docker compose -f compose.yaml -f compose.build.yaml up --build -d
 ```
 
-### 3. Access
+`compose.build.yaml` overrides `db`, `kong`, and `client` with local `build:` stanzas so all
+images are built from source.
+
+### 4. Access
 
 - Readest app: `http://localhost:3000`
 - MinIO console: `http://localhost:9001` (login with `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD`)
