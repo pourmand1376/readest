@@ -30,6 +30,7 @@ export async function register() {
   }
 
   // Retry until the database is ready (it may still be starting up).
+  // Uses exponential backoff: 1 s, 2 s, 4 s, … capped at 16 s per attempt.
   let client: InstanceType<typeof Client> | null = null;
   for (let attempt = 1; attempt <= 30; attempt++) {
     try {
@@ -39,7 +40,8 @@ export async function register() {
     } catch {
       client = null;
       if (attempt < 30) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 16_000);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       } else {
         console.error(
           '[db-migrate] Could not connect to database after 30 attempts – skipping migrations.',
@@ -65,7 +67,7 @@ export async function register() {
       } catch (err) {
         // Log but continue – a previously applied migration may produce
         // a benign error (e.g., duplicate object) even with IF NOT EXISTS.
-        console.warn('[db-migrate] Warning while applying', file, '–', (err as Error).message);
+        console.warn('[db-migrate] Warning while applying', file, '–', err);
       }
     }
   } finally {
