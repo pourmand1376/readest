@@ -112,7 +112,46 @@ docker compose down -v
 
 ---
 
-## Building the Dockerfile standalone
+## Multi-device / LAN access
+
+By default the stack binds all public-facing URLs to `localhost`, which means the app only works from the machine running Docker.  To access Readest from **other browsers or devices on your network** (e.g. a phone, a second PC, or two different browsers on the LAN), you must tell the stack your server's actual IP address.
+
+### 1. Set `HOST_IP`
+
+In `docker/.env`, change `HOST_IP` from `localhost` to your server's LAN IP:
+
+```env
+HOST_IP=192.168.1.100   # replace with your actual IP
+```
+
+`HOST_IP` controls three things in `compose.yaml`:
+| env var | purpose |
+|---|---|
+| `SUPABASE_PUBLIC_URL` | URL the **browser** uses to reach the Supabase/Kong API (auth, DB) |
+| `API_BASE_URL` | URL the **browser** uses to call the Readest sync & API endpoints |
+| `S3_PUBLIC_ENDPOINT` | URL the **browser** uses to upload/download book files from MinIO |
+
+### 2. Update auth redirect URLs
+
+`HOST_IP` does **not** automatically update the GoTrue auth URLs, so email confirmation links and OAuth redirects will still point to `localhost` unless you also change these three variables in `docker/.env`:
+
+```env
+API_EXTERNAL_URL=http://192.168.1.100:8000
+SITE_URL=http://192.168.1.100:3000
+ADDITIONAL_REDIRECT_URLS=http://192.168.1.100:3000/**,http://192.168.1.100:8000/**
+```
+
+### 3. Restart the stack
+
+```bash
+cd docker
+docker compose down && docker compose up -d
+```
+
+> **Tip:** If you're exposing Readest over the internet via a reverse proxy, replace the IP address with your domain name (e.g. `https://readest.example.com`).
+
+---
+
 
 ```bash
 docker build \
