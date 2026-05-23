@@ -11,6 +11,12 @@ services:
       - ./volumes/db/init/schema.sql:/docker-entrypoint-initdb.d/init-scripts/100-schema.sql:Z
       - db-data:/var/lib/postgresql/data:Z
       - db-config:/etc/postgresql-custom
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     environment:
       POSTGRES_HOST: /var/run/postgresql
       PGPORT: ${POSTGRES_PORT}
@@ -139,9 +145,14 @@ services:
       OBJECT_STORAGE_TYPE: ${OBJECT_STORAGE_TYPE:-s3}
       STORAGE_FIXED_QUOTA: ${STORAGE_FIXED_QUOTA:-1073741824}
       TRANSLATION_FIXED_QUOTA: ${TRANSLATION_FIXED_QUOTA:-50000}
+      POSTGRES_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
     depends_on:
-      - kong
-      - minio
+      db:
+        condition: service_healthy
+      kong:
+        condition: service_started
+      minio:
+        condition: service_started
 
 volumes:
   db-config:

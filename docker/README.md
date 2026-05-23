@@ -115,6 +115,24 @@ docker compose down -v
 
 ---
 
+## Database Migrations
+
+The `docker/volumes/db/migrations/` directory contains SQL migration files that create tables and functions required for book syncing across devices (e.g. `replicas`, `replica_keys`, `book_shares`, CRDT merge functions).
+
+**Fresh installs and upgrades** — migration files are baked into the readest client image (via `COPY . .` during the Docker build). When the client container starts it connects directly to the database using `POSTGRES_URL` and applies every migration file in order. All files are idempotent (`IF NOT EXISTS`, `CREATE OR REPLACE`, `DROP CONSTRAINT IF EXISTS`), so re-running them on an already-migrated database is safe.
+
+**Manual apply (emergency / advanced)** — if you need to apply migrations outside of the normal startup flow:
+
+```bash
+cd /path/to/readest
+for f in docker/volumes/db/migrations/*.sql; do
+  echo "Applying $f ..."
+  docker exec -i supabase-db psql -U postgres -d postgres < "$f"
+done
+```
+
+---
+
 ## Building the Dockerfile standalone
 
 ```bash
