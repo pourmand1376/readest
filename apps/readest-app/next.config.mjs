@@ -42,7 +42,7 @@ const nextConfig = {
   // Configure assetPrefix or else the server won't properly resolve your assets.
   assetPrefix: '',
   reactStrictMode: true,
-  serverExternalPackages: ['isows'],
+  serverExternalPackages: ['isows', 'pg'],
   allowedDevOrigins: ['192.168.2.120'],
   webpack: (config) => {
     config.resolve.alias = {

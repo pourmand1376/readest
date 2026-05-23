@@ -119,9 +119,9 @@ docker compose down -v
 
 The `docker/volumes/db/migrations/` directory contains SQL migration files that create tables and functions required for book syncing across devices (e.g. `replicas`, `replica_keys`, `book_shares`, CRDT merge functions).
 
-**Fresh installs** — the migration files are mounted as numbered init scripts (`101-migration-001.sql` through `113-migration-013.sql`). Postgres runs init scripts in alphanumeric order, so the migrations automatically execute after `100-schema.sql` on first boot. No action needed.
+**Fresh installs and upgrades** — migration files are baked into the readest client image (via `COPY . .` during the Docker build). When the client container starts it connects directly to the database using `POSTGRES_URL` and applies every migration file in order. All files are idempotent (`IF NOT EXISTS`, `CREATE OR REPLACE`, `DROP CONSTRAINT IF EXISTS`), so re-running them on an already-migrated database is safe.
 
-**Existing installs** — if you deployed before this fix, the migrations were never applied. Apply them manually with:
+**Manual apply (emergency / advanced)** — if you need to apply migrations outside of the normal startup flow:
 
 ```bash
 cd /path/to/readest
@@ -130,8 +130,6 @@ for f in docker/volumes/db/migrations/*.sql; do
   docker exec -i supabase-db psql -U postgres -d postgres < "$f"
 done
 ```
-
-All migration files are idempotent (`IF NOT EXISTS`, `CREATE OR REPLACE`, `DROP CONSTRAINT IF EXISTS`), so it is safe to run them even if some were partially applied.
 
 ---
 
