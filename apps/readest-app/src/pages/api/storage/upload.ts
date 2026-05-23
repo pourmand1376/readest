@@ -65,7 +65,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .single();
 
     if (fetchError && fetchError.code !== 'PGRST116') {
-      return res.status(500).json({ error: fetchError.message });
+      console.error('File record fetch error:', fetchError);
+      return res.status(500).json({ error: 'Could not fetch file record' });
     }
     let objSize = fileSize;
     if (existingRecord) {
@@ -86,7 +87,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .select()
         .single();
       console.log('Inserted record:', inserted);
-      if (insertError) return res.status(500).json({ error: insertError.message });
+      if (insertError) {
+        console.error('File record insert error:', insertError);
+        return res.status(500).json({ error: 'Could not create file record' });
+      }
     }
 
     try {

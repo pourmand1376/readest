@@ -115,6 +115,32 @@ docker compose down -v
 
 ---
 
+## Upgrading an Existing Deployment
+
+When upgrading from an older version, database migrations may be required. Run
+each pending migration against your Postgres container in order:
+
+```bash
+# Connect to the running Postgres container
+docker exec -i supabase-db psql -U postgres -d postgres \
+  < docker/volumes/db/migrations/007_files_replica_grouping.sql
+```
+
+Or apply all migrations at once:
+
+```bash
+cd docker
+for f in volumes/db/migrations/*.sql; do
+  echo "Applying $f ..."
+  docker exec -i supabase-db psql -U postgres -d postgres < "$f"
+done
+```
+
+Migrations are idempotent (`IF NOT EXISTS` / `CREATE OR REPLACE`) and safe to
+re-run on an already-migrated database.
+
+---
+
 ## Building the Dockerfile standalone
 
 ```bash
