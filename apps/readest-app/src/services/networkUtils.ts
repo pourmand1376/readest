@@ -28,7 +28,8 @@ export const isLocalAddress = (url: URL): boolean => {
   // IPv4 – parse octets once
   const parts = h.split('.');
   if (parts.length === 4) {
-    const [o1, o2] = parts.map(Number);
+    const o1 = Number(parts[0]);
+    const o2 = Number(parts[1]);
     if (o1 === 127) return true; // 127.0.0.0/8 loopback
     if (o1 === 10) return true; // 10.0.0.0/8
     if (o1 === 172 && o2 >= 16 && o2 <= 31) return true; // 172.16.0.0/12
