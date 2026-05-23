@@ -3,10 +3,11 @@ name: readest
 services:
   db:
     container_name: supabase-db
+    build:
+      context: ./volumes/db
     image: supabase/postgres:15.8.1.085
     restart: unless-stopped
     volumes:
-      - ./volumes/db/init-scripts:/docker-entrypoint-initdb.d/init-scripts:Z
       - db-data:/var/lib/postgresql/data:Z
       - db-config:/etc/postgresql-custom
     environment:
