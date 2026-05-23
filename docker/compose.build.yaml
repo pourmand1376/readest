@@ -1,4 +1,14 @@
 services:
+  db:
+    build:
+      context: ./volumes/db
+    image: ghcr.io/readest/readest-db:latest
+
+  kong:
+    build:
+      context: ./volumes/api
+    image: ghcr.io/readest/readest-kong:latest
+
   client:
     build:
       context: ..
