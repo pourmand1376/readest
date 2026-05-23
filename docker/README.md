@@ -115,10 +115,73 @@ docker compose down -v
 
 ---
 
-## Building the Dockerfile standalone
+## Multi-device / LAN access
+
+By default the stack binds all public-facing URLs to `localhost`, which means the app only works from the machine running Docker.  To access Readest from **other browsers or devices on your network** (e.g. a phone, a second PC, or two different browsers on the LAN), you must tell the stack your server's actual IP address.
+
+### 1. Set `HOST_IP`
+
+In `docker/.env`, change `HOST_IP` from `localhost` to your server's LAN IP:
+
+```env
+HOST_IP=192.168.1.100   # replace with your actual IP
+```
+
+`HOST_IP` controls three things in `compose.yaml`:
+| env var | purpose |
+|---|---|
+| `SUPABASE_PUBLIC_URL` | URL the **browser** uses to reach the Supabase/Kong API (auth, DB) |
+| `API_BASE_URL` | URL the **browser** uses to call the Readest sync & API endpoints |
+| `S3_PUBLIC_ENDPOINT` | URL the **browser** uses to upload/download book files from MinIO |
+
+### 2. Update auth redirect URLs
+
+`HOST_IP` does **not** automatically update the GoTrue auth URLs, so email confirmation links and OAuth redirects will still point to `localhost` unless you also change these three variables in `docker/.env`:
+
+```env
+API_EXTERNAL_URL=http://192.168.1.100:8000
+SITE_URL=http://192.168.1.100:3000
+ADDITIONAL_REDIRECT_URLS=http://192.168.1.100:3000/**,http://192.168.1.100:8000/**
+```
+
+### 3. Restart the stack
 
 ```bash
-docker build \
+cd docker
+docker compose down && docker compose up -d
+```
+
+> **Tip:** If you're exposing Readest over the internet via a reverse proxy, replace the IP address with your domain name (e.g. `https://readest.example.com`).
+
+---
+
+## Database Migrations
+
+The `docker/volumes/db/migrations/` directory contains incremental SQL migrations that add tables and functions on top of the base `schema.sql`. These are automatically applied on a **fresh** database (i.e. when the `db-data` volume is new).
+
+**If you started the stack before these migrations were mounted** (e.g. you updated from an older version of this repository), the new tables will be missing and you will see errors like `relation "public.replicas" does not exist`. Apply the outstanding migrations manually:
+
+```bash
+cd docker
+for f in $(ls volumes/db/migrations/*.sql | sort); do
+  echo "Applying $f ..."
+  docker exec -i supabase-db psql -U postgres -d postgres < "../$f"
+done
+```
+
+Or apply a single migration:
+
+```bash
+docker exec -i supabase-db psql -U postgres -d postgres < docker/volumes/db/migrations/003_add_replicas.sql
+```
+
+All migration files use `IF NOT EXISTS` / `CREATE OR REPLACE` guards so they are safe to re-run on a database that already has some of them applied.
+
+> **Adding a new migration:** create `docker/volumes/db/migrations/NNN_your_migration.sql` (next number in sequence) and add the corresponding mount line to the `db` service in `compose.yaml` so it runs automatically on future fresh installs.
+
+---
+
+## Building the Dockerfile standalone
   --target production-stage \
   --build-arg NEXT_PUBLIC_APP_PLATFORM=web \
   -t readest-client \

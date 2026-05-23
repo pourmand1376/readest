@@ -332,8 +332,27 @@ export interface SystemSettings {
    */
   syncCategories?: Partial<Record<SyncCategory, boolean>>;
 
+  /**
+   * User-configured self-hosted backend URL (e.g. `https://readest.myserver.com`).
+   * When set, the app fetches Supabase and API config from this server instead of
+   * the default `web.readest.com` backend. Requires a page reload to take effect.
+   */
+  customBackendUrl?: string;
+  /**
+   * Cached config fetched from `customBackendUrl/api/config`. Stored locally so
+   * the app can bootstrap with the correct Supabase/API endpoints even on cold
+   * start before network is available.
+   */
+  customBackendConfig?: CustomBackendConfig;
+
   // Global read settings that apply to the reader page
   globalReadSettings: ReadSettings;
   // Global view settings that apply to all books, and can be overridden by book-specific view settings
   globalViewSettings: ViewSettings;
+}
+
+export interface CustomBackendConfig {
+  supabaseUrl: string;
+  supabaseAnonKey: string;
+  apiBaseUrl: string;
 }

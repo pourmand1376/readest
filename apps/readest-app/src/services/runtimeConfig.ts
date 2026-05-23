@@ -1,3 +1,5 @@
+import type { CustomBackendConfig } from '@/types/settings';
+
 export interface ReadestRuntimeConfig {
   supabaseUrl?: string;
   supabaseAnonKey?: string;
@@ -43,3 +45,32 @@ export const getServerRuntimeConfig = (): ReadestRuntimeConfig => ({
     return raw ? parseInt(raw, 10) : undefined;
   })(),
 });
+
+// ── Custom backend config (localStorage) ─────────────────────────────────────
+// Native (Tauri) apps are built as a static export: there is no server-side
+// runtime-config injection. Users who run a self-hosted Readest backend can
+// configure the app to connect to their server; the fetched config is stored in
+// localStorage so it is available synchronously during module initialisation
+// (before async settings.json has been loaded).
+
+export const CUSTOM_BACKEND_STORAGE_KEY = 'readest_custom_backend_config';
+
+export const getCustomBackendConfig = (): CustomBackendConfig | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(CUSTOM_BACKEND_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as CustomBackendConfig) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const setCustomBackendConfig = (config: CustomBackendConfig): void => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(CUSTOM_BACKEND_STORAGE_KEY, JSON.stringify(config));
+};
+
+export const clearCustomBackendConfig = (): void => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(CUSTOM_BACKEND_STORAGE_KEY);
+};
