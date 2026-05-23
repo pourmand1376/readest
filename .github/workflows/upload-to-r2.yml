@@ -14,8 +14,6 @@ on:
         required: true
         type: string
 
-permissions: read-all
-
 jobs:
   upload-to-r2:
     runs-on: ubuntu-latest
