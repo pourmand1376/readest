@@ -85,6 +85,8 @@ CREATE TABLE public.files (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
   book_hash text NULL,
+  replica_kind text NULL,
+  replica_id text NULL,
   file_key text NOT NULL,
   file_size bigint NOT NULL,
   created_at timestamp with time zone NULL DEFAULT now(),
@@ -98,6 +100,7 @@ CREATE TABLE public.files (
 CREATE INDEX idx_files_user_id_deleted_at ON public.files (user_id, deleted_at);
 CREATE INDEX idx_files_file_key ON public.files (file_key);
 CREATE INDEX idx_files_file_key_deleted_at ON public.files (file_key, deleted_at);
+CREATE INDEX idx_files_replica_lookup ON public.files (user_id, replica_kind, replica_id);
 
 ALTER TABLE public.files ENABLE ROW LEVEL SECURITY;
 CREATE POLICY files_insert ON public.files FOR INSERT WITH CHECK (auth.uid() = user_id);
