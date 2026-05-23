@@ -152,9 +152,33 @@ docker compose down && docker compose up -d
 
 ---
 
+## Database Migrations
+
+The `docker/volumes/db/migrations/` directory contains incremental SQL migrations that add tables and functions on top of the base `schema.sql`. These are automatically applied on a **fresh** database (i.e. when the `db-data` volume is new).
+
+**If you started the stack before these migrations were mounted** (e.g. you updated from an older version of this repository), the new tables will be missing and you will see errors like `relation "public.replicas" does not exist`. Apply the outstanding migrations manually:
 
 ```bash
-docker build \
+cd docker
+for f in $(ls volumes/db/migrations/*.sql | sort); do
+  echo "Applying $f ..."
+  docker exec -i supabase-db psql -U postgres -d postgres < "../$f"
+done
+```
+
+Or apply a single migration:
+
+```bash
+docker exec -i supabase-db psql -U postgres -d postgres < docker/volumes/db/migrations/003_add_replicas.sql
+```
+
+All migration files use `IF NOT EXISTS` / `CREATE OR REPLACE` guards so they are safe to re-run on a database that already has some of them applied.
+
+> **Adding a new migration:** create `docker/volumes/db/migrations/NNN_your_migration.sql` (next number in sequence) and add the corresponding mount line to the `db` service in `compose.yaml` so it runs automatically on future fresh installs.
+
+---
+
+## Building the Dockerfile standalone
   --target production-stage \
   --build-arg NEXT_PUBLIC_APP_PLATFORM=web \
   -t readest-client \

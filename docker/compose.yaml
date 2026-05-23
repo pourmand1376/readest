@@ -9,6 +9,19 @@ services:
       - ./volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
       - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
       - ./volumes/db/init/schema.sql:/docker-entrypoint-initdb.d/init-scripts/100-schema.sql:Z
+      - ./volumes/db/migrations/001_add_rsvp_position.sql:/docker-entrypoint-initdb.d/init-scripts/101-migration-001.sql:Z
+      - ./volumes/db/migrations/002_add_book_shares.sql:/docker-entrypoint-initdb.d/init-scripts/102-migration-002.sql:Z
+      - ./volumes/db/migrations/003_add_replicas.sql:/docker-entrypoint-initdb.d/init-scripts/103-migration-003.sql:Z
+      - ./volumes/db/migrations/004_crdt_merge_replica_fn.sql:/docker-entrypoint-initdb.d/init-scripts/104-migration-004.sql:Z
+      - ./volumes/db/migrations/005_replica_manifest_cursor_updated_at.sql:/docker-entrypoint-initdb.d/init-scripts/105-migration-005.sql:Z
+      - ./volumes/db/migrations/006_replica_more_kinds.sql:/docker-entrypoint-initdb.d/init-scripts/106-migration-006.sql:Z
+      - ./volumes/db/migrations/007_files_replica_grouping.sql:/docker-entrypoint-initdb.d/init-scripts/107-migration-007.sql:Z
+      - ./volumes/db/migrations/008_replica_keys_rpcs.sql:/docker-entrypoint-initdb.d/init-scripts/108-migration-008.sql:Z
+      - ./volumes/db/migrations/009_replica_opds_catalog.sql:/docker-entrypoint-initdb.d/init-scripts/109-migration-009.sql:Z
+      - ./volumes/db/migrations/010_replica_keys_forget.sql:/docker-entrypoint-initdb.d/init-scripts/110-migration-010.sql:Z
+      - ./volumes/db/migrations/011_replica_settings.sql:/docker-entrypoint-initdb.d/init-scripts/111-migration-011.sql:Z
+      - ./volumes/db/migrations/012_send_to_readest.sql:/docker-entrypoint-initdb.d/init-scripts/112-migration-012.sql:Z
+      - ./volumes/db/migrations/013_add_book_notes_global.sql:/docker-entrypoint-initdb.d/init-scripts/113-migration-013.sql:Z
       - db-data:/var/lib/postgresql/data:Z
       - db-config:/etc/postgresql-custom
     environment:
