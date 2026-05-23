@@ -115,6 +115,26 @@ docker compose down -v
 
 ---
 
+## Database Migrations
+
+The `docker/volumes/db/migrations/` directory contains SQL migration files that create tables and functions required for book syncing across devices (e.g. `replicas`, `replica_keys`, `book_shares`, CRDT merge functions).
+
+**Fresh installs** — the migration files are mounted as numbered init scripts (`101-migration-001.sql` through `113-migration-013.sql`) and run automatically in order after the base schema on first boot. No action needed.
+
+**Existing installs** — if you deployed before this fix, the migrations were never applied. Apply them manually with:
+
+```bash
+cd /path/to/readest
+for f in $(ls docker/volumes/db/migrations/*.sql | sort); do
+  echo "Applying $f ..."
+  docker exec -i supabase-db psql -U postgres -d postgres < "$f"
+done
+```
+
+All migration files are idempotent (`IF NOT EXISTS`, `CREATE OR REPLACE`, `DROP CONSTRAINT IF EXISTS`), so it is safe to run them even if some were partially applied.
+
+---
+
 ## Building the Dockerfile standalone
 
 ```bash
